@@ -88,6 +88,8 @@ class MyGUI:
             
         if "canvas" not in st.session_state:
             st.session_state.canvas = mpld3.fig_to_html(self.fig)
+        if "canvas1" not in st.session_state:
+           st.session_state.canvas1 = self.fig
         
 
         with self.filterSeite.container():
@@ -112,7 +114,7 @@ class MyGUI:
             box3 = st.container(border=True)
             box3.write("Filterung")
             self.filterVal = box3.radio("", options=["All Codons", "Custom"], horizontal = True, on_change=self.customEnable)     
-            box3.text_input(label="Customs", value= st.session_state.cutoms_Input, disabled= st.session_state.filter_Input)
+            box3.text_input(label="Customs", key='cutoms_Input', disabled= st.session_state.filter_Input)
             but = st.columns(2)
             but[0].button(label="Evaluate Data", disabled = st.session_state.eva_Data, on_click= self.evalData)
             but[1].button(label="Refresh Page", on_click = st.session_state.clear) 
@@ -122,7 +124,9 @@ class MyGUI:
             st.text_area(label="sequence", label_visibility="hidden", value=st.session_state.newSeq,key=st.session_state.txtArea, height=5)
 
             
-            components.html(st.session_state.canvas, height=650,scrolling=True,width=1400)
+            
+            #components.html(st.session_state.canvas, height=700)
+            st.pyplot(st.session_state.canvas1)
             
             uDiagram = st.columns(2)
             uDiagram[0].button(label="Zurück", disabled=st.session_state.back, on_click=self.prevPlot)
@@ -167,8 +171,15 @@ class MyGUI:
             st.session_state.filter_Input = False
 
     def nFoundlingsWindow(self):
-        msg = "Folgende Funde".join([str(int(len(key)/st.session_state.nr))+"Codons "+str(key)+": "+str(len(self.cleanedIndicies[key]))+ "\n" for key in self.cleanedIndicies.__reversed__()])
-        st.success( icon="💯", body=msg)
+        try:
+            msg = "Folgende Funde".join([str(int(len(key)/st.session_state.nr))+"Codons "+str(key)+": "+str(len(self.cleanedIndicies[key]))+ "\n" for key in self.cleanedIndicies.__reversed__()])
+            st.success( icon="💯", body=msg)
+        except:
+            st.error(icon= "🚨", body="Keine Teilsequenz gefunden")
+            print('#######################################')
+            print("object has no attribute cleanedIndicies")
+            print('#######################################')
+        
       
     def nothingFound(self):
         st.error(icon= "🚨", body="Keine Teilsequenz gefunden")
@@ -192,15 +203,21 @@ class MyGUI:
         #if tb == 1:
         if True:
             file = files
-            f = np.genfromtxt(files,dtype=str,delimiter='\n',autostrip=True)
-            st.session_state.seqName = f[0]
-            st.session_state.sequence = ''.join([f[x] for x in range(1,len(f))])
-            st.session_state.info = f
-            newSeq = ''.join([st.session_state.sequence[x:x+70]+'\n' for x in range(0,len(st.session_state.sequence),70)])
-            self.lastLineLength.append(70-len(newSeq[len(newSeq)%71:-1]))
-            newSeq+='+\n'
-            print(newSeq)
-            st.session_state.newSeq=newSeq
+            try:
+                f = np.genfromtxt(files,dtype=str,delimiter='\n',autostrip=True)
+                st.session_state.seqName = f[0]
+                st.session_state.sequence = ''.join([f[x] for x in range(1,len(f))])
+                st.session_state.info = f
+                newSeq = ''.join([st.session_state.sequence[x:x+70]+'\n' for x in range(0,len(st.session_state.sequence),70)])
+                self.lastLineLength.append(70-len(newSeq[len(newSeq)%71:-1]))
+                newSeq+='+\n'
+                print(newSeq)
+                st.session_state.newSeq=newSeq
+            except:
+                st.session_state.newSeq =''
+                print('#######################################')
+                print("datei entfernt")
+                print('#######################################')
         elif counter > 1:
             for file in files:
                 with open(file,'r') as f:
@@ -236,27 +253,32 @@ class MyGUI:
         print(len(perms))
         ps = PS
         incidies = {}
-        if type(perms) == 'list':
-            for perm in perms:
-                part= "".join([x for x in perm])
-                print("searching for motif",part)
-                incidies[part]=ps.search(ps,txt,part)
-        else:
-            print("Im in else")
-            for perm in perms:
-                part= "".join([element for element in perm])
-                incidies[part]=ps.search(ps,txt,part)
-                
-        if st.session_state.tb_disabled == False:
-            return incidies
-        else:
-            myList = self.dynFinds(txt,incidies,self.codonArray)
-            longestLength = len(myList[-1][0])
-            newDict = {}
-            for entry in myList:
-                if len(entry[0]) == longestLength:
-                    newDict[entry[0]] = entry[1]
-            return newDict
+        try:
+            if type(perms) == 'list':
+                for perm in perms:
+                    part= "".join([x for x in perm])
+                    print("searching for motif",part)
+                    incidies[part]=ps.search(ps,txt,part)
+            else:
+                print("Im in else")
+                for perm in perms:
+                    part= "".join([element for element in perm])
+                    incidies[part]=ps.search(ps,txt,part)
+                    
+            if st.session_state.tb_disabled == False:
+                return incidies
+            else:
+                myList = self.dynFinds(txt,incidies,self.codonArray)
+                longestLength = len(myList[-1][0])
+                newDict = {}
+                for entry in myList:
+                    if len(entry[0]) == longestLength:
+                        newDict[entry[0]] = entry[1]
+                return newDict
+        except:
+            print('#######################################')
+            print("sequence item 0: expected str instance, tuple found")
+            print('#######################################')
     
     def showNeighbors(self,txt:str,indexDict:dict):
         print("Im showing my Plot and Highlights")
@@ -270,7 +292,7 @@ class MyGUI:
             self.cumulativeEval(txt,self.cleanedIndicies)
  
     def clearPlot(self):
-        #[x.clear() for x in self.axes]
+        #[x.clear for x in self.axes]
         if self.vicinityWidth == "Basen":
             self.axes[0].set_title("Basen davor")
             self.axes[1].set_title("Basen danach")
@@ -300,6 +322,12 @@ class MyGUI:
         if self.vicinityWidth == "Codons": st.session_state.nr = 3
         elif self.vicinityWidth == "Dinukleotide":st.session_state.nr = 2
         else :st.session_state.nr = 1
+        print('denme streamlit')
+        print('')
+        print('')
+        print('')
+        print(st.session_state.nr)
+        print(self.offset)
         codonsBefore = ""
         codonsAfter = ""
         delta = self.offset*st.session_state.nr
@@ -366,7 +394,7 @@ class MyGUI:
         self.axes[2].set_xticks(self.axes[2].get_xticks(), self.axes[2].get_xticklabels(), rotation=45, ha='right') 
         self.axes[3].set_xticks(self.axes[3].get_xticks(), self.axes[3].get_xticklabels(), rotation=45, ha='right')
         print("Hauptfenster")
-        st.session_state.canvas = mpld3.fig_to_html(self.fig)
+        st.session_state.canvas =self.fig
         
 
     ## ypilmasi gerek        
@@ -448,6 +476,7 @@ class MyGUI:
                     #self.axes[1].sharex(self.axes[0])
                     self.axes[0].set_xticks(self.axes[0].get_xticks(), self.axes[0].get_xticklabels(), rotation=60, ha='right')
                     self.axes[1].set_xticks(self.axes[1].get_xticks(), self.axes[1].get_xticklabels(), rotation=60, ha='right')
+                    
                     sumAminoBefore = sum(aminosBeforeDict.values())
                     print("Sum of Aminos Before ",sumAminoBefore)
                     print("Printing Aminoacids with its count")
@@ -463,13 +492,6 @@ class MyGUI:
                     self.axes[3].bar([*aminosAfterDict.keys()],relAfter,width=0.15) 
                     self.axes[2].set_xticks(self.axes[2].get_xticks(), self.axes[2].get_xticklabels(), rotation=45, ha='right') 
                     self.axes[3].set_xticks(self.axes[3].get_xticks(), self.axes[3].get_xticklabels(), rotation=45, ha='right')
-                    print('start')
-                    print(relBefore)
-                    print(relAfter)
-                    print(self.axes[1].get_xticks())
-                    print(self.axes[2].get_xticks())
-                    print(self.axes[3].get_xticks())
-                    print(self.axes[1].get_xticklabels())
                     end = time.time()
                     print("Plot is finished",(end-start))
                 case 2:
@@ -489,14 +511,10 @@ class MyGUI:
                     self.axes[2].bar([*aminosBeforeDict],[*relBefore],width=0.15)
                     self.axes[3].bar([*aminosAfterDict],[*relAfter],width=0.15)
                     print(self.axes)
-        self.fig.savefig('Hatest.png')                 
+        self.fig.savefig('Hatest.png')  
         print("Canvas should be drawn")
-        #mpld3.display(self.fig)
-        #st.pyplot(st.session_state.canvas)
-        #mpld3.display()
-        
-        st.session_state.canvas = mpld3.fig_to_html(self.fig)
-        
+        #st.session_state.canvas = mpld3.fig_to_html(self.fig)
+        st.session_state.canvas1 = self.fig
 
 
     def nextPlot(self):
@@ -520,14 +538,13 @@ class MyGUI:
     def sequenceToDict(self,subsequence:str)->dict:
         seqDict = dict()
         delta = st.session_state.nr
-        print(delta)
+        s:str
         if delta == 3:
             if self.filterVal == "All Codons":
                 print("Im in FilterVal1 in Dict creation")
                 codonBase = list(cad.keys())
             elif self.filterVal == "Custom":
-                s :str
-                s=st.session_state.cutoms_Input
+                s = st.session_state.cutoms_Input
                 print("Im in FilterVal2 in Dict creation")
                 codonBase = np.array([str.upper(x.strip()) for x in s.split(",")])
                 print('Codon Base')
@@ -582,45 +599,55 @@ class MyGUI:
         self.plotIndex = 0
         self.fig.suptitle(st.session_state.seqName)
         s=st.session_state.codons_input
-        self.codonArray = np.array([str.upper(x.strip()) for x in str(s).split("+")])
-        indicies = self.createSearchPattern(st.session_state.sequence, self.combinationOfCodons(self.codonArray))
-        self.cleanedIndicies = {k:v for k,v in indicies.items() if not v == []}
-        #self.cleanedIndicies = self.filterFinds(self.cleanedIndicies)
-        print(self.cleanedIndicies)
-        print("I filtered my Finds")
-        if len(self.cleanedIndicies) == 0:
-            self.nothingFound()
-            return
-        st.session_state.next = True
-        self.offset = int(st.session_state.umgebung)
-        self.showNeighbors(st.session_state.sequence,self.cleanedIndicies)
-        end = time.time()
-        print("Completely Finished in: ",end-start)
+        try:
+            self.codonArray = np.array([str.upper(x.strip()) for x in str(s).split("+")])
+            indicies = self.createSearchPattern(st.session_state.sequence, self.combinationOfCodons(self.codonArray))
+            self.cleanedIndicies = {k:v for k,v in indicies.items() if not v == []}
+            #self.cleanedIndicies = self.filterFinds(self.cleanedIndicies)
+            print(self.cleanedIndicies)
+            print("I filtered my Finds")
+            if len(self.cleanedIndicies) == 0:
+                self.nothingFound()
+                return
+            st.session_state.next = True
+            self.offset = int(st.session_state.umgebung)
+            self.showNeighbors(st.session_state.sequence,self.cleanedIndicies)
+            end = time.time()
+            print("Completely Finished in: ",end-start)
+        except:
+            print('#######################################')
+            print('object has no attribute items')
+            print('#######################################')
         self.nFoundlingsWindow()
         self.highlightFounds()   
 
         
     def highlightFounds(self):
-        indexlist = self.cleanedIndicies[self.foundIndicies[self.plotIndex]]
-        self.xlist = [i for i, ltr in enumerate(st.session_state.sequence) if ltr == '+']
-        for index in indexlist:
-            count=0
-            for x in self.xlist:
-                if x < index:
-                   count+=1
-                   index += self.lastLineLength[count-1] 
-            tmp = (int(index)/70)
-            tmp2 = index - int(tmp)*70
-            begin_vk = int(tmp)+1
-            end_nk = tmp2+self.keyLen
-            tmpStr1 = str(begin_vk+count)+"."+str(tmp2)
-            if end_nk > 70:    
-                while(end_nk>70):
-                    begin_vk+=1
-                    end_nk -= 70
-                tmpStr2 = str(begin_vk)+"."+str(end_nk)
-            else:               
-                tmpStr2 = str(int(tmp)+1+count)+"."+str(tmp2+len(self.foundIndicies[self.plotIndex]))
-            #annotated_text((tmpStr1), background='green',foreground='black' )
+        try:
+            indexlist = self.cleanedIndicies[self.foundIndicies[self.plotIndex]]
+            self.xlist = [i for i, ltr in enumerate(st.session_state.sequence) if ltr == '+']
+            for index in indexlist:
+                count=0
+                for x in self.xlist:
+                    if x < index:
+                        count+=1
+                        index += self.lastLineLength[count-1] 
+                tmp = (int(index)/70)
+                tmp2 = index - int(tmp)*70
+                begin_vk = int(tmp)+1
+                end_nk = tmp2+self.keyLen
+                tmpStr1 = str(begin_vk+count)+"."+str(tmp2)
+                if end_nk > 70:    
+                    while(end_nk>70):
+                        begin_vk+=1
+                        end_nk -= 70
+                    tmpStr2 = str(begin_vk)+"."+str(end_nk)
+                else:               
+                    tmpStr2 = str(int(tmp)+1+count)+"."+str(tmp2+len(self.foundIndicies[self.plotIndex]))
+                #annotated_text((tmpStr1), background='green',foreground='black' )
+        except:
+            print('#######################################')
+            print('highligth')
+            print('#######################################')
 
 MyGUI()

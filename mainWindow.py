@@ -292,6 +292,9 @@ class MyGUI:
     def cumulativeEval(self,text:str,motifIndicies:dict):
         codonsBefore = ""
         codonsAfter = ""
+        print('denme Main')
+        print(self.vicinityWidth.get())
+        print(self.offset)
         delta = self.offset*self.vicinityWidth.get()
         for key,indexList in motifIndicies.items():
             keyLength = len(key)
@@ -433,12 +436,7 @@ class MyGUI:
                     self.axes[1].bar([*codonsAfterDict.keys()],relAfter,width=0.15)
                     #self.axes[1].sharex(self.axes[0])
                     self.axes[0].set_xticks(self.axes[0].get_xticks(), self.axes[0].get_xticklabels(), rotation=60, ha='right')
-                    self.axes[1].set_xticks(self.axes[1].get_xticks(), self.axes[1].get_xticklabels(), rotation=60, ha='right')
-                    
-                    print('start')
-                    print(relBefore)
-                    print(relAfter)                    
-                    print(self.axes[1].get_xticks())                    
+                    self.axes[1].set_xticks(self.axes[1].get_xticks(), self.axes[1].get_xticklabels(), rotation=60, ha='right')            
 
                     sumAminoBefore = sum(aminosBeforeDict.values())
                     print("Sum of Aminos Before ",sumAminoBefore)
@@ -454,13 +452,6 @@ class MyGUI:
                     self.axes[3].bar([*aminosAfterDict.keys()],relAfter,width=0.15) 
                     self.axes[2].set_xticks(self.axes[2].get_xticks(), self.axes[2].get_xticklabels(), rotation=45, ha='right') 
                     self.axes[3].set_xticks(self.axes[3].get_xticks(), self.axes[3].get_xticklabels(), rotation=45, ha='right')
-                    print('start')
-                    print(relBefore)
-                    print(relAfter)
-                    print(self.axes[1].get_xticks())
-                    print(self.axes[2].get_xticks())
-                    print(self.axes[3].get_xticks())
-                    print(self.axes[1].get_xticklabels())
                     end = time.time()
                     print("Plot is finished",(end-start))
                 case 2:
@@ -481,7 +472,7 @@ class MyGUI:
                     self.axes[3].bar([*aminosAfterDict],[*relAfter],width=0.15)
                     print(self.axes)
         self.fig.savefig('test.png')                 
-        print("Canvas should be drawn")
+        print("Canvas should be drawn")          
         self.canvas.draw()
 
     def nextPlot(self):
@@ -505,7 +496,6 @@ class MyGUI:
     def sequenceToDict(self,subsequence:str)->dict:
         seqDict = dict()
         delta = self.vicinityWidth.get()
-        print(delta)
         if delta == 3:
             if self.filterVal.get() == 1:
                 print("Im in FilterVal1 in Dict creation")
