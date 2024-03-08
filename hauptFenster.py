@@ -9,7 +9,7 @@ from matplotlib.backends.backend_agg import FigureCanvasAgg as FigureCanvas
 from bm_search import PatternSearch as PS
 from decodeDict import codonAminoDict as cad
 import streamlit.components.v1 as components
-
+from annotated_text import annotated_text, annotation
 
 #semsettin kullular
 
@@ -625,7 +625,6 @@ class MyGUI:
         
     def highlightFounds(self):
         with st.echo():
-            from annotated_text import annotated_text, annotation
             annotated_text("", annotation(st.session_state.newSeq, "noun", font_family="Comic Sans MS", border="2px dashed red"),)
             st.write(st.session_state.newSeq)
         try:
