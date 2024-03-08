@@ -10,6 +10,7 @@ from bm_search import PatternSearch as PS
 from decodeDict import codonAminoDict as cad
 import streamlit.components.v1 as components
 
+
 #semsettin kullular
 
 
@@ -645,6 +646,9 @@ class MyGUI:
                 else:               
                     tmpStr2 = str(int(tmp)+1+count)+"."+str(tmp2+len(self.foundIndicies[self.plotIndex]))
                 #annotated_text((tmpStr1), background='green',foreground='black' )
+            with st.echo():
+                from annotated_text import annotated_text, annotation
+                annotated_text("", annotation(st.session_state.newSeq, "noun", font_family="Comic Sans MS", border="2px dashed red"),)
         except:
             print('#######################################')
             print('highligth')
