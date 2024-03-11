@@ -646,15 +646,6 @@ class MyGUI:
                 else:               
                     tmpStr2 = str(int(tmp)+1+count)+"."+str(tmp2+len(self.foundIndicies[self.plotIndex]))
                 #annotated_text((tmpStr1), background='green',foreground='black' )
-            newSeq=("hallo hallo **hallo**")
-            st.markdown(newSeq, unsafe_allow_html=True)
-            st.write=newSeq
-            annotation = {"start":tmpStr1,"end":tmpStr2, "tag":"Highlight"}
-            
-            with st.echo():
-                from annotated_text import annotated_text, annotation
-                annotated_text(st.session_state.newSeq, annotation(self.foundIndicies[self.plotIndex], "codon", font_family="Comic Sans MS", border="2px dashed red"),)
-                st.write(self.foundIndicies[self.plotIndex])
         except:
             print('#######################################')
             print('highligth')
