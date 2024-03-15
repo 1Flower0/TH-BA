@@ -27,6 +27,11 @@ class MyGUI:
         self.filterVal = ""
         self.longestCheck :bool
         self.cummulativeEval :bool
+        self.text_Content='''Foo, Bar
+                              123, 456
+                              789, 000
+                            '''
+        
 
 
         if "nr" not in st.session_state:
@@ -80,6 +85,10 @@ class MyGUI:
         if "next" not in st.session_state:
             st.session_state.next = True
             
+        if "Custom_Codon" not in st.session_state:
+            st.session_state.Custom_Codon = True
+            
+            
         self.fig,self.axes = plt.subplots(4,1)
         
         
@@ -116,6 +125,10 @@ class MyGUI:
             box3.write("Filterung")
             self.filterVal = box3.radio("", options=["All Codons", "Custom"], horizontal = True, on_change=self.customEnable)     
             box3.text_input(label="Customs", key='cutoms_Input', disabled= st.session_state.filter_Input)
+            box3.file_uploader("Upload txt", type=["txt", "doc"], key="Custom_Codons", disabled=st.session_state.filter_Input,on_change=self.openCusFile)
+            folders = box3.columns(2)
+            folders[0].button(label='Zip erstellen',disabled=st.session_state.Custom_Codon, on_click=self.multipleQuest)#TODO erst öffnen wenn eine datei eingefügt wurde
+            folders[1].download_button('Download Zip',self.text_Content, file_name='codons_reihe.zip', disabled= True)#TODO öffnen wenn der button gedrückt wurde
             but = st.columns(2)
             but[0].button(label="Evaluate Data", disabled = st.session_state.eva_Data, on_click= self.evalData)
             but[1].button(label="Refresh Page", on_click = st.session_state.clear) 
@@ -323,12 +336,6 @@ class MyGUI:
         if self.vicinityWidth == "Codons": st.session_state.nr = 3
         elif self.vicinityWidth == "Dinukleotide":st.session_state.nr = 2
         else :st.session_state.nr = 1
-        print('denme streamlit')
-        print('')
-        print('')
-        print('')
-        print(st.session_state.nr)
-        print(self.offset)
         codonsBefore = ""
         codonsAfter = ""
         delta = self.offset*st.session_state.nr
@@ -397,8 +404,7 @@ class MyGUI:
         print("Hauptfenster")
         st.session_state.canvas =self.fig
         
-
-    ## ypilmasi gerek        
+   
     def showPlot(self,indexlist,txt:str,keyLen:int):
         print("#####In showPlot Method#####")
         print("Current Motif",self.foundIndicies[self.plotIndex])
@@ -547,7 +553,7 @@ class MyGUI:
             elif self.filterVal == "Custom":
                 s = st.session_state.cutoms_Input
                 print("Im in FilterVal2 in Dict creation")
-                codonBase = np.array([str.upper(x.strip()) for x in s.split(",")])
+                codonBase = np.array([str.upper(x.strip()) for x in s.split(" ")])
                 print('Codon Base')
                 print(codonBase)
                 self.customCodonArray = codonBase
@@ -584,7 +590,7 @@ class MyGUI:
             if st.session_state.min == st.session_state.max:
                 return np.array([x for x in itertools.product(codonArray,repeat=st.session_state.min)])
             else:
-                for i in range(int(st.session_state.min),int(st.session_state.max)+1):
+                for i in range(st.session_state.min,st.session_state.max+1):
                     tmpList = list(itertools.product(codonArray,repeat=i))
                     myList.append(tmpList)
             return myList
@@ -651,4 +657,21 @@ class MyGUI:
             print('highligth')
             print('#######################################')
 
+
+    def multipleQuest(self):
+        try:
+            datei = open(st.session_state.Custom_Codons,'r')
+            #schleife einfügen und die deien Speichern 
+            print(datei.readlines)
+            st.write(datei.readline)
+            
+        except:
+            print('Datei erstellung')
+            
+    def openCusFile(self):
+        if st.session_state.Custom_Codons == "":
+            st.session_state.Custom_Codon = True          
+        else:
+            st.session_state.Custom_Codon = False  
+            
 MyGUI()
