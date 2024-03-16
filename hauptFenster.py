@@ -87,6 +87,8 @@ class MyGUI:
             
         if "Custom_Codon" not in st.session_state:
             st.session_state.Custom_Codon = True
+        if "counter" not in st.session_state:
+            st.session_state.counter = 0
             
             
         self.fig,self.axes = plt.subplots(4,1)
@@ -125,7 +127,7 @@ class MyGUI:
             box3.write("Filterung")
             self.filterVal = box3.radio("", options=["All Codons", "Custom"], horizontal = True, on_change=self.customEnable)     
             box3.text_input(label="Customs", key='cutoms_Input', disabled= st.session_state.filter_Input)
-            box3.file_uploader("Upload txt", type=["txt", "doc"], key="Custom_Codons", disabled=st.session_state.filter_Input,on_change=self.openCusFile)
+            box3.file_uploader("Upload txt", type=["txt", "doc"], key="cCodons", disabled=st.session_state.filter_Input,on_change=self.openCusFile)
             folders = box3.columns(2)
             folders[0].button(label='Zip erstellen',disabled=st.session_state.Custom_Codon, on_click=self.multipleQuest)#TODO erst öffnen wenn eine datei eingefügt wurde
             folders[1].download_button('Download Zip',self.text_Content, file_name='codons_reihe.zip', disabled= True)#TODO öffnen wenn der button gedrückt wurde
@@ -402,7 +404,8 @@ class MyGUI:
         self.axes[2].set_xticks(self.axes[2].get_xticks(), self.axes[2].get_xticklabels(), rotation=45, ha='right') 
         self.axes[3].set_xticks(self.axes[3].get_xticks(), self.axes[3].get_xticklabels(), rotation=45, ha='right')
         print("Hauptfenster")
-        st.session_state.canvas =self.fig
+        self.fig.savefig('zip/'+ st.session_state.counter + 'Hatest.png')  
+        st.session_state.canvas1 =self.fig
         
    
     def showPlot(self,indexlist,txt:str,keyLen:int):
@@ -660,16 +663,28 @@ class MyGUI:
 
     def multipleQuest(self):
         try:
-            datei = open(st.session_state.Custom_Codons,'r')
+            print('deneme')
+            #datei = open(st.session_state.cCodons,'r')
+            print('deneme')
+            for line in st.session_state.cCodons:
+                st.session_state.counter = st.session_state.counter + 1
+                print(st.session_state.counter)
+                print(line.decode("utf-8").strip())
+                st.session_state.cutoms_Input=line.decode("utf-8").strip()
+                self.evalData()
+                s=st.session_state.counter
+                self.fig.savefig(str(s))
+                self.fig.savefig(st.session_state.cutoms_Input+'.png')
+                st.session_state.cutoms_Input=""
+                
             #schleife einfügen und die deien Speichern 
-            print(datei.readlines)
-            st.write(datei.readline)
+
             
         except:
             print('Datei erstellung')
             
     def openCusFile(self):
-        if st.session_state.Custom_Codons == "":
+        if st.session_state.cCodons == "":
             st.session_state.Custom_Codon = True          
         else:
             st.session_state.Custom_Codon = False  
