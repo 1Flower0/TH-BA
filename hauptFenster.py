@@ -188,8 +188,12 @@ class MyGUI:
 
     def nFoundlingsWindow(self):
         try:
-            msg = "Folgende Funde".join([str(int(len(key)/st.session_state.nr))+"Codons "+str(key)+": "+str(len(self.cleanedIndicies[key]))+ "\n" for key in self.cleanedIndicies.__reversed__()])
-            st.success( icon="💯", body=msg)
+            if st.session_state.cCodons:
+                msg = "Folgende Funde".join([str(int(len(key)/st.session_state.nr))+"Codons "+str(key)+": "+str(len(self.cleanedIndicies[key]))+ "\n" for key in self.cleanedIndicies.__reversed__()])
+                st.success( icon="💯", body=msg)
+            
+#TODO
+            st.session_state.cCodons
         except:
             st.error(icon= "🚨", body="Keine Teilsequenz gefunden")
             print('#######################################')
@@ -667,18 +671,22 @@ class MyGUI:
             #datei = open(st.session_state.cCodons,'r')
             print('deneme')
             for line in st.session_state.cCodons:
-                st.session_state.counter = st.session_state.counter + 1
+                if st.session_state.counter>1:
+                    self.fig.clf()
+                    self.axes.cla()
+                #st.session_state.counter = st.session_state.counter + 1
                 print(st.session_state.counter)
                 print(line.decode("utf-8").strip())
                 st.session_state.cutoms_Input=line.decode("utf-8").strip()
                 self.evalData()
                 s=st.session_state.counter
-                self.fig.savefig(str(s))
-                self.fig.savefig(st.session_state.cutoms_Input+'.png')
+                self.fig.savefig('folder/'+str(s)+st.session_state.cutoms_Input+'.png')
                 st.session_state.cutoms_Input=""
-                
+                st.session_state.counter = st.session_state.counter+1
+                self.fig.clf() 
+                        
             #schleife einfügen und die deien Speichern 
-
+            st.session_state.counter=0
             
         except:
             print('Datei erstellung')
