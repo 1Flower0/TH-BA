@@ -743,6 +743,7 @@ class MyGUI:
     def create_download_link_for_folder(self):
         folder_path = "folder"
         
+        st.write("hallo<")
          # Create in-memory buffer
         zip_buffer = io.BytesIO()
 
