@@ -731,10 +731,11 @@ class MyGUI:
             
             
         except:
+            st.write("datei")
             print('Datei erstellung')
             
     def openCusFile(self):
-        if len(st.session_state.cCodons) > 0:
+        if st.session_state.cCodons== 0:
             st.session_state.Custom_Codon = True          
         else:
             st.session_state.Custom_Codon = False  
