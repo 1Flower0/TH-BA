@@ -755,10 +755,10 @@ class MyGUI:
         # Serve the zip file for download
         zip_buffer.seek(0)
 
-       # st.markdown(
-        #    f'<a href="folder_download.zip" download>Click here to download the folder</a>',
-         #   unsafe_allow_html=True
-        #)
+        st.markdown(
+            f'<a href="folder_download.zip" download>Click here to download the folder</a>',
+            unsafe_allow_html=True
+        )
         st.session_state.lo=zip_buffer
         st.session_state.zipi=False
        # st.session_state.ZIP=self.folders[1].download_button(
