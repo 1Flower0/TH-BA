@@ -753,7 +753,7 @@ class MyGUI:
                     zipf.write(os.path.join(root, file), os.path.relpath(os.path.join(root, file), folder_path))
 
         # Serve the zip file for download
-        zip_buffer.seek(0)
+        zip_buffer.seek(5)
 
         st.markdown(
             f'<a href="folder_download.zip" download>Click here to download the folder</a>',
