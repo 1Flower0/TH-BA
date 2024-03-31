@@ -93,8 +93,6 @@ class MyGUI:
             st.session_state.Custom_Codon = True
         if "counter" not in st.session_state:
             st.session_state.counter = 0
-        if "down" not in st.session_state:
-            st.session_state.down = True
         if "zipi" not in st.session_state:
             st.session_state.zipi = True
         if "lo" not in st.session_state:
@@ -727,7 +725,7 @@ class MyGUI:
                         
             #schleife einfügen und die deien Speichern 
             st.session_state.counter=0
-            st.session_state.down=False
+            st.session_state.zipi=False
             self.create_download_link_for_folder()
 
             
