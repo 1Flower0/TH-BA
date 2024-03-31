@@ -1,4 +1,8 @@
 import streamlit as st
+import os
+import io
+import shutil
+from zipfile import ZipFile
 import itertools
 import numpy as np
 import time
@@ -89,6 +93,12 @@ class MyGUI:
             st.session_state.Custom_Codon = True
         if "counter" not in st.session_state:
             st.session_state.counter = 0
+        if "down" not in st.session_state:
+            st.session_state.down = True
+        if "zipi" not in st.session_state:
+            st.session_state.zipi = True
+        if "lo" not in st.session_state:
+            st.session_state.lo = b'example content'
             
             
         self.fig,self.axes = plt.subplots(4,1)
@@ -128,9 +138,17 @@ class MyGUI:
             self.filterVal = box3.radio("", options=["All Codons", "Custom"], horizontal = True, on_change=self.customEnable)     
             box3.text_input(label="Customs", key='cutoms_Input', disabled= st.session_state.filter_Input)
             box3.file_uploader("Upload txt", type=["txt", "doc"], key="cCodons", disabled=st.session_state.filter_Input,on_change=self.openCusFile)
-            folders = box3.columns(2)
-            folders[0].button(label='Zip erstellen',disabled=st.session_state.Custom_Codon, on_click=self.multipleQuest)#TODO erst öffnen wenn eine datei eingefügt wurde
-            folders[1].download_button('Download Zip',self.text_Content, file_name='codons_reihe.zip', disabled= True)#TODO öffnen wenn der button gedrückt wurde
+            self.folders = box3.columns(2)
+            self.folders[0].button(label='Zip erstellen',disabled=st.session_state.Custom_Codon, on_click=self.multipleQuest)
+            self.folders[1].download_button(
+            label="Download ZIP",
+            key="ZIP",
+            data=st.session_state.lo,
+            file_name="myfile.zip",
+            mime="application/zip",
+            disabled=st.session_state.zipi
+        )
+            #self.folders[1].button(label="download", on_click=self.create_download_link_for_folder )# = self.create_download_button(temp_folder)
             but = st.columns(2)
             but[0].button(label="Evaluate Data", disabled = st.session_state.eva_Data, on_click= self.evalData)
             but[1].button(label="Refresh Page", on_click = st.session_state.clear) 
@@ -188,14 +206,18 @@ class MyGUI:
 
     def nFoundlingsWindow(self):
         try:
-            if st.session_state.cCodons:
-                msg = "Folgende Funde".join([str(int(len(key)/st.session_state.nr))+"Codons "+str(key)+": "+str(len(self.cleanedIndicies[key]))+ "\n" for key in self.cleanedIndicies.__reversed__()])
+            msg = "Folgende Funde".join([str(int(len(key)/st.session_state.nr))+"Codons "+str(key)+": "+str(len(self.cleanedIndicies[key]))+ "\n" for key in self.cleanedIndicies.__reversed__()])    
+            if st.session_state.Custom_Codon:
                 st.success( icon="💯", body=msg)
-            
-#TODO
-            st.session_state.cCodons
+            else:
+                msg=msg+"\n"+"Line "+str(st.session_state.counter)
+                st.toast( icon="💯", body=msg)
         except:
-            st.error(icon= "🚨", body="Keine Teilsequenz gefunden")
+            if st.session_state.Custom_Codon:
+                st.error(icon= "🚨", body="Keine Teilsequenz gefunden")
+            else:
+                st.toast(icon= "🚨", body="Keine Teilsequenz gefunden")
+            
             print('#######################################')
             print("object has no attribute cleanedIndicies")
             print('#######################################')
@@ -386,6 +408,14 @@ class MyGUI:
                 else:
                     codonsAfter+=text[start:end]
                 
+        if st.session_state.Custom_Codon==True:
+            codonsBeforeDict=""
+            codonsAfterDict=""
+            codonsBeforeRel =""
+            codonsAfterRel = ""
+            aminosBeforeRel = ""
+            aminosAfterRel = ""
+
         codonsBeforeDict = self.sequenceToDict(codonsBefore)
         codonsAfterDict = self.sequenceToDict(codonsAfter)
         aminosBeforeDict = self.aminosToDict(self.translateCodons(codonsBefore))
@@ -408,7 +438,6 @@ class MyGUI:
         self.axes[2].set_xticks(self.axes[2].get_xticks(), self.axes[2].get_xticklabels(), rotation=45, ha='right') 
         self.axes[3].set_xticks(self.axes[3].get_xticks(), self.axes[3].get_xticklabels(), rotation=45, ha='right')
         print("Hauptfenster")
-        self.fig.savefig('zip/'+ st.session_state.counter + 'Hatest.png')  
         st.session_state.canvas1 =self.fig
         
    
@@ -667,14 +696,22 @@ class MyGUI:
 
     def multipleQuest(self):
         try:
-            print('deneme')
-            #datei = open(st.session_state.cCodons,'r')
-            print('deneme')
+            print(st.session_state.cCodons)
+            st.write(st.session_state.cCodons)
+            s=st.session_state.newSeq
+            with open("folder/readme.txt", "w") as f:
+                f.write("Die genutzte Sequence"+'\n')
+                f.write(st.session_state.newSeq)
+                f.write("MOTIV:"+'\n')
+                f.write(st.session_state.codons_input+'\n')
+                f.write("TUPELLÄNGE: VON-BIS"+'\n')
+                f.write(str(st.session_state.min)+"-"+str(st.session_state.max)+'\n')
+                f.write("Umgebung:"+'\n')
+                f.write("")
+                f.write("Typ:"+'\n')
+                f.write(self.vicinityWidth+'\n')
             for line in st.session_state.cCodons:
-                if st.session_state.counter>1:
-                    self.fig.clf()
-                    self.axes.cla()
-                #st.session_state.counter = st.session_state.counter + 1
+                st.session_state.counter = st.session_state.counter + 1
                 print(st.session_state.counter)
                 print(line.decode("utf-8").strip())
                 st.session_state.cutoms_Input=line.decode("utf-8").strip()
@@ -682,11 +719,21 @@ class MyGUI:
                 s=st.session_state.counter
                 self.fig.savefig('folder/'+str(s)+st.session_state.cutoms_Input+'.png')
                 st.session_state.cutoms_Input=""
-                st.session_state.counter = st.session_state.counter+1
-                self.fig.clf() 
+                self.axes[0].cla()
+                self.axes[1].cla()
+                self.axes[2].cla()
+                self.axes[3].cla()
+
                         
             #schleife einfügen und die deien Speichern 
             st.session_state.counter=0
+            st.session_state.down=False
+            if st.session_state.lo:
+                self.create_download_link_for_folder()
+            else:
+                st.session_state.lo=True
+                self.multipleQuest()
+            
             
         except:
             print('Datei erstellung')
@@ -696,5 +743,37 @@ class MyGUI:
             st.session_state.Custom_Codon = True          
         else:
             st.session_state.Custom_Codon = False  
+            
+            
+    def create_download_link_for_folder(self):
+        folder_path = "folder"
+        
+         # Create in-memory buffer
+        zip_buffer = io.BytesIO()
+
+        # Zip the folder into the buffer
+        with ZipFile(zip_buffer, "w") as zipf:
+            for root, _, files in os.walk(folder_path):
+                for file in files:
+                    zipf.write(os.path.join(root, file), os.path.relpath(os.path.join(root, file), folder_path))
+
+        # Serve the zip file for download
+        zip_buffer.seek(10)
+
+       # st.markdown(
+        #    f'<a href="folder_download.zip" download>Click here to download the folder</a>',
+         #   unsafe_allow_html=True
+        #)
+        st.session_state.lo=zip_buffer
+        st.session_state.zipi=False
+       # st.session_state.ZIP=self.folders[1].download_button(
+       #     label="Download ZIP",
+       #     key="ZIP",
+       #     data=zip_buffer,
+       #     file_name="myfile.zip",
+       #     mime="application/zip",
+       # )
+        
+        
             
 MyGUI()
