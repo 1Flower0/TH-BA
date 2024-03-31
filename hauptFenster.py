@@ -728,11 +728,8 @@ class MyGUI:
             #schleife einfügen und die deien Speichern 
             st.session_state.counter=0
             st.session_state.down=False
-            if st.session_state.lo:
-                self.create_download_link_for_folder()
-            else:
-                st.session_state.lo=True
-                self.multipleQuest()
+            self.create_download_link_for_folder()
+
             
             
         except:
@@ -758,7 +755,7 @@ class MyGUI:
                     zipf.write(os.path.join(root, file), os.path.relpath(os.path.join(root, file), folder_path))
 
         # Serve the zip file for download
-        zip_buffer.seek(10)
+        zip_buffer.seek(0)
 
        # st.markdown(
         #    f'<a href="folder_download.zip" download>Click here to download the folder</a>',
