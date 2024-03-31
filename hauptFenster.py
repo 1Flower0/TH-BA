@@ -694,8 +694,6 @@ class MyGUI:
 
     def multipleQuest(self):
         try:
-            print(st.session_state.cCodons)
-            st.write(st.session_state.cCodons)
             s=st.session_state.newSeq
             with open("folder/readme.txt", "w") as f:
                 f.write("Die genutzte Sequence"+'\n')
