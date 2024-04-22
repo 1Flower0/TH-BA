@@ -149,7 +149,11 @@ class MyGUI:
             #self.folders[1].button(label="download", on_click=self.create_download_link_for_folder )# = self.create_download_button(temp_folder)
             but = st.columns(2)
             but[0].button(label="Evaluate Data", disabled = st.session_state.eva_Data, on_click= self.evalData)
-            but[1].button(label="Refresh Page", on_click = st.session_state.clear) 
+            but[1].download_button(label="Einzelner Download", disabled = st.session_state.eva_Data,
+            data=st.session_state.lo,
+            file_name="myfile.zip",
+            mime="application/zip",
+            ) 
             
              
         with self.diagramSeite.container():
@@ -436,6 +440,8 @@ class MyGUI:
         self.axes[2].set_xticks(self.axes[2].get_xticks(), self.axes[2].get_xticklabels(), rotation=45, ha='right') 
         self.axes[3].set_xticks(self.axes[3].get_xticks(), self.axes[3].get_xticklabels(), rotation=45, ha='right')
         print("Hauptfenster")
+        self.fig.savefig('folder/einzeln.png')
+        self.speichern()
         st.session_state.canvas1 =self.fig
         
    
@@ -552,7 +558,8 @@ class MyGUI:
                     self.axes[2].bar([*aminosBeforeDict],[*relBefore],width=0.15)
                     self.axes[3].bar([*aminosAfterDict],[*relAfter],width=0.15)
                     print(self.axes)
-        self.fig.savefig('Hatest.png')  
+        self.fig.savefig('folder/einzeln.png')  
+        self.speichern()
         print("Canvas should be drawn")
         #st.session_state.canvas = mpld3.fig_to_html(self.fig)
         st.session_state.canvas1 = self.fig
@@ -665,6 +672,7 @@ class MyGUI:
         
     def highlightFounds(self):
         try:
+            self.speichern()
             indexlist = self.cleanedIndicies[self.foundIndicies[self.plotIndex]]
             self.xlist = [i for i, ltr in enumerate(st.session_state.sequence) if ltr == '+']
             for index in indexlist:
@@ -691,7 +699,21 @@ class MyGUI:
             print('highligth')
             print('#######################################')
 
-
+    def speichern(self):
+        with open("folder/einzeln.txt", "w") as f:
+            f.write("Die genutzte Sequence"+'\n')
+            f.write(st.session_state.newSeq)
+            f.write("MOTIV:"+'\n')
+            f.write(st.session_state.codons_input+'\n')
+            f.write("TUPELLÄNGE: VON-BIS"+'\n')
+            f.write(str(st.session_state.min)+"-"+str(st.session_state.max)+'\n')
+            f.write("Umgebung:"+'\n')
+            f.write("")
+            f.write("Typ:"+'\n')
+            f.write(self.vicinityWidth+'\n')
+            self.create_download_link_for_folder()
+            
+            
     def multipleQuest(self):
         try:
             s=st.session_state.newSeq
@@ -760,13 +782,13 @@ class MyGUI:
         #)
         st.session_state.lo=zip_buffer
         st.session_state.zipi=False
-       # st.session_state.ZIP=self.folders[1].download_button(
-       #     label="Download ZIP",
-       #     key="ZIP",
-       #     data=zip_buffer,
-       #     file_name="myfile.zip",
-       #     mime="application/zip",
-       # )
+        #st.session_state.ZIP=self.folders[1].download_button(
+        #    label="Download ZIP",
+        #    key="ZIP",
+        #    data=zip_buffer,
+        #    file_name="myfile.zip",
+        #    mime="application/zip",
+        #)
         
         
             
