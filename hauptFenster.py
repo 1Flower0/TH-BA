@@ -151,15 +151,14 @@ class MyGUI:
             but[0].button(label="Evaluate Data", disabled = st.session_state.eva_Data, on_click= self.evalData)
             but[1].download_button(label="Einzelner Download", disabled = st.session_state.eva_Data,
             data=st.session_state.lo,
-            file_name="myfile.zip",
+            file_name="single.zip",
             mime="application/zip",
             ) 
             
              
         with self.diagramSeite.container():
-            st.text_area(label="sequence", label_visibility="hidden", value=st.session_state.newSeq,key=st.session_state.txtArea, height=5)
+            st.session_state.newSeq = st.text_area(label="sequence", value=st.session_state.newSeq, height=5)
 
-            
             
             #components.html(st.session_state.canvas, height=700)
             st.pyplot(st.session_state.canvas1)
@@ -167,7 +166,6 @@ class MyGUI:
             uDiagram = st.columns(2)
             uDiagram[0].button(label="Zurück", disabled=st.session_state.back, on_click=self.prevPlot)
             uDiagram[1].button(label="Nächstes", disabled=st.session_state.next, on_click= self.nextPlot)    
- 
 
 
     def filterFinds(self,myFinds:dict)->dict:
@@ -232,6 +230,7 @@ class MyGUI:
         st.error( icon=  "🚨", body='Gesuchte Codons konnten nicht im Bereich '+where+' gefunden werden')
   
     def checkCodonInput(self):
+        st.write()
         if len(st.session_state.codons_input) > 1 and not st.session_state.newSeq == "":
             st.session_state.eva_Data = False          
         else:
@@ -256,7 +255,8 @@ class MyGUI:
                 self.lastLineLength.append(70-len(newSeq[len(newSeq)%71:-1]))
                 newSeq+='+\n'
                 print(newSeq)
-                st.session_state.newSeq=newSeq
+                st.session_state.newSeq = newSeq
+                
             except:
                 st.session_state.newSeq =''
                 print('#######################################')
@@ -297,6 +297,8 @@ class MyGUI:
         print(len(perms))
         ps = PS
         incidies = {}
+        if st.session_state.seqName == "Manuelle Eingabe":
+            txt=st.session_state.newSeq
         try:
             if type(perms) == 'list':
                 for perm in perms:
@@ -639,14 +641,25 @@ class MyGUI:
             return np.array([x for x in itertools.product(codonArray,repeat=3)])    
                          
     def evalData(self):
+        self.speichern()
         if self.vicinityWidth == "Codons": st.session_state.nr = 3
         elif self.vicinityWidth == "Dinukleotide":st.session_state.nr = 2
         else :st.session_state.nr = 1
         print("Im in Eval now")
         start = time.time()
         self.plotIndex = 0
-        self.fig.suptitle(st.session_state.seqName)
-        s=st.session_state.codons_input
+        if len(st.session_state.seqName)>1 and not st.session_state.sequence == '':    
+            self.fig.suptitle(st.session_state.seqName)
+            s=st.session_state.codons_input
+        else:
+            s=st.session_state.codons_input
+            st.session_state.seqName = "Manuelle Eingabe"
+            st.session_state.sequence = st.session_state.newSeq
+            st.session_state.info = "Manuell"
+            newSeq = st.session_state.newSeq
+            newSeq+='\n+'
+            print(newSeq)
+        
         try:
             self.codonArray = np.array([str.upper(x.strip()) for x in str(s).split("+")])
             indicies = self.createSearchPattern(st.session_state.sequence, self.combinationOfCodons(self.codonArray))
@@ -700,18 +713,22 @@ class MyGUI:
             print('#######################################')
 
     def speichern(self):
-        with open("folder/einzeln.txt", "w") as f:
-            f.write("Die genutzte Sequence"+'\n')
-            f.write(st.session_state.newSeq)
-            f.write("MOTIV:"+'\n')
-            f.write(st.session_state.codons_input+'\n')
-            f.write("TUPELLÄNGE: VON-BIS"+'\n')
-            f.write(str(st.session_state.min)+"-"+str(st.session_state.max)+'\n')
-            f.write("Umgebung:"+'\n')
-            f.write("")
-            f.write("Typ:"+'\n')
-            f.write(self.vicinityWidth+'\n')
+        try:
+            with open("folder/Single.txt", "w") as f:
+                f.write("Die genutzte Sequence"+'\n')
+                f.write(st.session_state.newSeq+'\n')
+                f.write("MOTIV:"+'\n')
+                f.write(st.session_state.codons_input+'\n')
+                f.write("TUPELLÄNGE: VON-BIS"+'\n')
+                f.write(str(st.session_state.min)+"-"+str(st.session_state.max)+'\n')
+                f.write("Umgebung:"+'\n')
+                f.write("")
+                f.write("Typ:"+'\n')
+                f.write(self.vicinityWidth+'\n')
             self.create_download_link_for_folder()
+        except:
+            st.write("datei")
+            print('Datei erstellung')
             
             
     def multipleQuest(self):
@@ -746,10 +763,7 @@ class MyGUI:
             #schleife einfügen und die deien Speichern 
             st.session_state.counter=0
             st.session_state.zipi=False
-            self.create_download_link_for_folder()
-
-            
-            
+            self.create_download_link_for_folder()     
         except:
             st.write("datei")
             print('Datei erstellung')
@@ -772,6 +786,10 @@ class MyGUI:
             for root, _, files in os.walk(folder_path):
                 for file in files:
                     zipf.write(os.path.join(root, file), os.path.relpath(os.path.join(root, file), folder_path))
+                    print("deniyorum")
+                    print(root)
+                    print(folder_path)
+                    print(file)
 
         # Serve the zip file for download
         zip_buffer.seek(5)
