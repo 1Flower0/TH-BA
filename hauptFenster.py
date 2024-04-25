@@ -16,8 +16,6 @@ import streamlit.components.v1 as components
 
 
 #semsettin kullular
-
-
 class MyGUI:
     def __init__(self):
         st.set_page_config(
@@ -230,7 +228,6 @@ class MyGUI:
         st.error( icon=  "🚨", body='Gesuchte Codons konnten nicht im Bereich '+where+' gefunden werden')
   
     def checkCodonInput(self):
-        st.write()
         if len(st.session_state.codons_input) > 1 and not st.session_state.newSeq == "":
             st.session_state.eva_Data = False          
         else:
@@ -786,10 +783,6 @@ class MyGUI:
             for root, _, files in os.walk(folder_path):
                 for file in files:
                     zipf.write(os.path.join(root, file), os.path.relpath(os.path.join(root, file), folder_path))
-                    print("deniyorum")
-                    print(root)
-                    print(folder_path)
-                    print(file)
 
         # Serve the zip file for download
         zip_buffer.seek(5)
