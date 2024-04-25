@@ -319,6 +319,7 @@ class MyGUI:
                         newDict[entry[0]] = entry[1]
                 return newDict
         except:
+            print(self.axes)
             print('#######################################')
             print("sequence item 0: expected str instance, tuple found")
             print('#######################################')
