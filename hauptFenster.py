@@ -483,6 +483,7 @@ class MyGUI:
             else: #Everything is fine and i can just read the Subsequence
                 codonsAfter += txt[index+keyLen:index+keyLen+(self.offset*st.session_state.nr)]
 
+        print("nichts gefunden")
         codonsBeforeDict = self.sequenceToDict(codonsBefore)
         codonsAfterDict = self.sequenceToDict(codonsAfter)
         filterVal = 0
@@ -667,6 +668,8 @@ class MyGUI:
             print("I filtered my Finds")
             if len(self.cleanedIndicies) == 0:
                 self.nothingFound()
+                self.cleanedIndicies=1
+                self.showPlot(st.session_state.sequence,self.cleanedIndicies)
                 return
             st.session_state.next = True
             self.offset = int(st.session_state.umgebung)
