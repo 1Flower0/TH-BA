@@ -441,7 +441,6 @@ class MyGUI:
         self.axes[3].set_xticks(self.axes[3].get_xticks(), self.axes[3].get_xticklabels(), rotation=45, ha='right')
         print("Hauptfenster")
         self.fig.savefig('folder/einzeln.png')
-        self.speichern()
         st.session_state.canvas1 =self.fig
         
    
@@ -560,7 +559,6 @@ class MyGUI:
                     self.axes[3].bar([*aminosAfterDict],[*relAfter],width=0.15)
                     print(self.axes)
         self.fig.savefig('folder/einzeln.png')  
-        self.speichern()
         print("Canvas should be drawn")
         #st.session_state.canvas = mpld3.fig_to_html(self.fig)
         st.session_state.canvas1 = self.fig
@@ -640,7 +638,6 @@ class MyGUI:
             return np.array([x for x in itertools.product(codonArray,repeat=3)])    
                          
     def evalData(self):
-        self.speichern()
         if self.vicinityWidth == "Codons": st.session_state.nr = 3
         elif self.vicinityWidth == "Dinukleotide":st.session_state.nr = 2
         else :st.session_state.nr = 1
@@ -659,6 +656,7 @@ class MyGUI:
             newSeq+='\n+'
             print(newSeq)
         
+        self.speichern()
         try:
             self.codonArray = np.array([str.upper(x.strip()) for x in str(s).split("+")])
             indicies = self.createSearchPattern(st.session_state.sequence, self.combinationOfCodons(self.codonArray))
@@ -686,7 +684,6 @@ class MyGUI:
         
     def highlightFounds(self):
         try:
-            self.speichern()
             indexlist = self.cleanedIndicies[self.foundIndicies[self.plotIndex]]
             self.xlist = [i for i, ltr in enumerate(st.session_state.sequence) if ltr == '+']
             for index in indexlist:
@@ -715,9 +712,9 @@ class MyGUI:
 
     def speichern(self):
         try:
-            with open("folder/Single.txt", "w") as f:
+            with open("folder/einzeln.txt", "w") as f:
                 f.write("Die genutzte Sequence"+'\n')
-                f.write(st.session_state.newSeq+'\n')
+                f.write(st.session_state.newSeq)
                 f.write("MOTIV:"+'\n')
                 f.write(st.session_state.codons_input+'\n')
                 f.write("TUPELLÄNGE: VON-BIS"+'\n')
